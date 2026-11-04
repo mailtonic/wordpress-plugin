@@ -17,7 +17,7 @@ jobs:
     name: PHPCS, guards and version check
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
@@ -56,7 +56,7 @@ jobs:
     env:
       WP_DB_HOST: 127.0.0.1:3306
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
@@ -81,7 +81,7 @@ jobs:
     name: Plugin Check on the built zip
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - run: bin/build-zip.sh && unzip -q build/mailtonic.zip -d build/unzipped
       - uses: wordpress/plugin-check-action@v1
         with:
