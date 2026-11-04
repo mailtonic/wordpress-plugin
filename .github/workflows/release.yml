@@ -1,0 +1,37 @@
+name: Release to WordPress.org
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Versions agree (plugin header, readme stable tag, git tag)
+        run: bin/check-version.sh "${GITHUB_REF_NAME}"
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+          coverage: none
+      - run: composer install --no-interaction --no-progress
+      - run: vendor/bin/phpcs
+      - run: scripts/brand-guard.sh && scripts/host-guard.sh
+      - name: Build the zip (no tests, dev files or source maps)
+        run: bin/build-zip.sh && unzip -q build/mailtonic.zip -d build/unzipped
+      - uses: wordpress/plugin-check-action@v1
+        with:
+          build-dir: build/unzipped/mailtonic
+      - run: echo "VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
+      - name: Commit to WordPress.org SVN
+        uses: 10up/action-wordpress-plugin-deploy@2.3.0
+        env:
+          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+          SLUG: mailtonic
+          BUILD_DIR: build/unzipped/mailtonic

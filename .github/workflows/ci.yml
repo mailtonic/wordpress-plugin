@@ -1,0 +1,88 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: PHPCS, guards and version check
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+          coverage: none
+      - run: composer install --no-interaction --no-progress
+      - run: vendor/bin/phpcs
+      - run: scripts/brand-guard.sh
+      - run: scripts/host-guard.sh
+      - run: scripts/test-guards.sh
+      - run: bin/check-version.sh
+
+  test:
+    name: PHP ${{ matrix.php }} / WP ${{ matrix.wp }} / WC ${{ matrix.wc || 'none' }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Minimum versions.
+          - { php: '8.0', wp: '6.5.13', wc: '8.6.0' }
+          # Latest versions (as pinned in composer.lock).
+          - { php: '8.4', wp: 'locked', wc: '11.2.1' }
+          # Without WooCommerce, plus the multisite run.
+          - { php: '8.4', wp: 'locked', wc: '', multisite: true }
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: wordpress_test
+          MYSQL_USER: wp
+          MYSQL_PASSWORD: wp
+          MYSQL_ROOT_PASSWORD: root
+        ports: ['3306:3306']
+        options: --health-cmd="mysqladmin ping -h 127.0.0.1" --health-interval=5s --health-timeout=5s --health-retries=20
+    env:
+      WP_DB_HOST: 127.0.0.1:3306
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mysqli, sodium
+          tools: composer:v2
+          coverage: none
+      - run: composer install --no-interaction --no-progress
+      - name: Use WordPress ${{ matrix.wp }}
+        if: matrix.wp != 'locked'
+        run: composer require --dev --no-interaction --no-progress -W "wp-phpunit/wp-phpunit:${{ matrix.wp }}" "roots/wordpress-no-content:${{ matrix.wp }}"
+      - name: Install WooCommerce ${{ matrix.wc }}
+        if: matrix.wc != ''
+        run: echo "MAILTONIC_WC_DIR=$(bin/install-woocommerce.sh ${{ matrix.wc }})" >> "$GITHUB_ENV"
+      - name: Without WooCommerce
+        if: matrix.wc == ''
+        run: echo "MAILTONIC_WC_DIR=" >> "$GITHUB_ENV"
+      - run: vendor/bin/phpunit
+      - if: matrix.multisite
+        run: WP_MULTISITE=1 vendor/bin/phpunit --group multisite
+
+  plugin-check:
+    name: Plugin Check on the built zip
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: bin/build-zip.sh && unzip -q build/mailtonic.zip -d build/unzipped
+      - uses: wordpress/plugin-check-action@v1
+        with:
+          build-dir: build/unzipped/mailtonic

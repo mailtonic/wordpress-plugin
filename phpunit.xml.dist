@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<phpunit bootstrap="tests/bootstrap.php" colors="true" beStrictAboutTestsThatDoNotTestAnything="true">
+	<testsuites>
+		<testsuite name="plugin">
+			<directory suffix="Test.php">tests</directory>
+		</testsuite>
+	</testsuites>
+	<groups>
+		<exclude>
+			<group>multisite</group>
+		</exclude>
+	</groups>
+</phpunit>

@@ -1,0 +1,5 @@
+/vendor/
+/.cache/
+/tests/wp-content/
+/build/
+.phpunit.result.cache

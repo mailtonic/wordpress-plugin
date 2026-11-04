@@ -1,0 +1,16 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "mailtonic/form",
+	"title": "mailtonic form",
+	"category": "widgets",
+	"icon": "email-alt",
+	"description": "Embed a mailtonic form or popup.",
+	"keywords": [ "newsletter", "signup", "popup" ],
+	"textdomain": "mailtonic",
+	"attributes": {
+		"formUid": { "type": "string", "default": "" }
+	},
+	"supports": { "html": false, "className": false, "customClassName": false },
+	"editorScript": "file:./index.js"
+}
