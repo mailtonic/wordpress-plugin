@@ -3,13 +3,19 @@ name: CodeQL
 on:
   push:
     branches: [main]
+    paths-ignore: ['README.md', 'SECURITY.md']
   pull_request:
+    paths-ignore: ['README.md', 'SECURITY.md']
   schedule:
     - cron: '17 4 * * 1'
 
 permissions:
   contents: read
   security-events: write
+
+concurrency:
+  group: codeql-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   analyze:

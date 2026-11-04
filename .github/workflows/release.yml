@@ -6,12 +6,20 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
   release:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
+      - name: CI passed on this commit
+        # Releases ship only a commit whose full test matrix is green on main.
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ok=$(gh run list -R "$GITHUB_REPOSITORY" --workflow CI --branch main --commit "$GITHUB_SHA" --status success --json databaseId -q length)
+          [ "$ok" -gt 0 ] || { echo "No green CI run on main for $GITHUB_SHA; push to main and wait for CI first."; exit 1; }
       - name: Versions agree (plugin header, readme stable tag, git tag)
         run: bin/check-version.sh "${GITHUB_REF_NAME}"
       - uses: shivammathur/setup-php@v2
