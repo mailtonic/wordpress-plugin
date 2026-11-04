@@ -536,6 +536,9 @@ final class Admin {
 		) as $key => $label ) {
 			echo '<label><input type="checkbox" name="wc[' . esc_attr( $key ) . ']" value="1"' . checked( ! empty( $wc[ $key ] ), true, false ) . '> ' . esc_html( $label ) . '</label><br>';
 		}
+		if ( ! Woo::block_field_supported() ) {
+			echo '<p class="notice notice-warning inline">' . esc_html__( 'This WooCommerce version cannot add the opt-in box to the checkout block, so shoppers using it cannot opt in. Update WooCommerce to 8.9 or later, or use the classic checkout.', 'mailtonic' ) . '</p>';
+		}
 		echo '</fieldset></td></tr>';
 		echo '<tr><th scope="row"><label for="mailtonic-wc-label">' . esc_html__( 'Opt-in label', 'mailtonic' ) . '</label></th><td><input type="text" id="mailtonic-wc-label" name="wc[label]" class="large-text" maxlength="300" value="' . esc_attr( '' !== $wc['label'] ? $wc['label'] : __( 'Email me news and offers from {store}. I can unsubscribe at any time.', 'mailtonic' ) ) . '"><p class="description">' . esc_html__( '{store} is replaced by your site name.', 'mailtonic' ) . '</p></td></tr>';
 		echo '<tr><th scope="row"><label for="mailtonic-wc-tags">' . esc_html__( 'Tags', 'mailtonic' ) . '</label></th><td><input type="text" id="mailtonic-wc-tags" name="wc[tags]" class="regular-text" value="' . esc_attr( implode( ', ', (array) $wc['tags'] ) ) . '"></td></tr>';

@@ -10,6 +10,14 @@ define( 'ABSPATH', dirname( __DIR__ ) . '/vendor/roots/wordpress-no-content/' );
 define( 'WP_CONTENT_DIR', __DIR__ . '/wp-content' );
 define( 'WP_PLUGIN_DIR', getenv( 'MAILTONIC_PLUGIN_DIR' ) ? getenv( 'MAILTONIC_PLUGIN_DIR' ) : __DIR__ . '/wp-content/plugins' );
 
+// The content directory is not in git. Without a themes directory WordPress 6.8+ warns that
+// wp_is_block_theme() ran before a theme root was registered, which fails separate-process tests.
+foreach ( array( 'themes', 'plugins', 'uploads' ) as $mailtonic_dir ) {
+	if ( ! is_dir( WP_CONTENT_DIR . '/' . $mailtonic_dir ) ) {
+		mkdir( WP_CONTENT_DIR . '/' . $mailtonic_dir, 0777, true ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_mkdir -- WordPress is not loaded yet.
+	}
+}
+
 define( 'WP_DEFAULT_THEME', 'default' );
 define( 'WP_DEBUG', true );
 

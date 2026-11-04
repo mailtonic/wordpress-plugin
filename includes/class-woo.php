@@ -157,6 +157,17 @@ final class Woo {
 	}
 
 	/**
+	 * Whether this WooCommerce can add fields to the checkout block. Release builds before 8.7
+	 * cannot (the API was experimental-only), so there the block checkout shows no box and
+	 * collects no opt-ins; the classic checkout is unaffected.
+	 *
+	 * @return bool
+	 */
+	public static function block_field_supported() {
+		return function_exists( 'woocommerce_register_additional_checkout_field' ) || function_exists( '__experimental_woocommerce_blocks_register_checkout_field' );
+	}
+
+	/**
 	 * Classic checkout: records a tick and the shopper's tracked cart.
 	 *
 	 * @param \WC_Order $order Order being created.

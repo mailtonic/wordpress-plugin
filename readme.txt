@@ -42,6 +42,10 @@ No. mailtonic forms keep their state in the browser's local storage, and the plu
 
 Only people who tick a consent box: a bridged form's consent checkbox, or the WooCommerce opt-in box. Buyers who do not tick it are never sent, unless they opted in on an earlier order.
 
+= Does the opt-in box work with the checkout block? =
+
+Yes, on WooCommerce 8.9 or later. Earlier versions cannot add fields to the checkout block, so there the box appears only on the classic checkout and the settings screen warns you.
+
 = What happens if I uninstall? =
 
 The plugin deletes its settings (including the key), its tables, and the order and user data it wrote. It never deletes anything in your mailtonic account.

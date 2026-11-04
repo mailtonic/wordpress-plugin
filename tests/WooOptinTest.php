@@ -43,6 +43,15 @@ class WooOptinTest extends Mailtonic_TestCase {
 
 		Woo::register_block_field(); // What woocommerce_init does on every connected request.
 		$fields = Automattic\WooCommerce\Blocks\Package::container()->get( Automattic\WooCommerce\Blocks\Domain\Services\CheckoutFields::class )->get_additional_fields();
+		$warning = 'This WooCommerce version cannot add the opt-in box to the checkout block';
+		$this->loginAs();
+		if ( ! Woo::block_field_supported() ) {
+			// WooCommerce 8.6 release builds have no checkout-block field API: no box there, and the settings screen says so.
+			$this->assertArrayNotHasKey( 'mailtonic/optin', $fields );
+			$this->assertStringContainsString( $warning, $this->renderPage( 'woocommerce' ) );
+			return;
+		}
+		$this->assertStringNotContainsString( $warning, $this->renderPage( 'woocommerce' ) );
 		$this->assertArrayHasKey( 'mailtonic/optin', $fields );
 		$this->assertSame( 'checkbox', $fields['mailtonic/optin']['type'] );
 		$this->assertSame( 'contact', $fields['mailtonic/optin']['location'] );
